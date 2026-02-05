@@ -1,24 +1,21 @@
 from pyrogram import Client, filters
 from vars import Var
 
-@Client.on_message(filters.private & (filters.document | filters.video | filters.audio))
+@Client.on_message(filters.private & (filters.document | filters.video))
 async def stream_handler(client, message):
-    # ভিডিও বা ডকুমেন্টের তথ্য সংগ্রহ
-    media = message.document or message.video or message.audio
-    file_name = "Video_File.mp4" # ডিফল্ট নাম
+    media = message.document or message.video
+    file_name = media.file_name if media.file_name else "Video"
     
-    if media and hasattr(media, 'file_name') and media.file_name:
-        file_name = media.file_name
+    # আপনার স্টোরেজ চ্যানেলে পাঠানো
+    log_msg = await message.forward(chat_id=Var.BIN_CHANNEL)
+    
+    stream_link = f"{Var.URL}watch/{log_msg.id}"
+    download_link = f"{Var.URL}dl/{log_msg.id}"
 
-    # লিঙ্ক জেনারেশন
-    stream_link = f"{Var.URL}watch/{message.id}"
-    download_link = f"{Var.URL}dl/{message.id}"
-
-    text = (
+    await message.reply_text(
         f"**আপনার লিঙ্ক তৈরি হয়ে গেছে!** 🚀\n\n"
         f"📂 **ফাইলের নাম:** `{file_name}`\n"
         f"🔗 **স্ট্রিমিং লিঙ্ক:** {stream_link}\n"
-        f"📥 **ডাউনলোড লিঙ্ক:** {download_link}"
+        f"📥 **ডাউনলোড লিঙ্ক:** {download_link}",
+        quote=True
     )
-
-    await message.reply_text(text=text, quote=True)
