@@ -1,44 +1,39 @@
-import mimetypes
 from aiohttp import web
 from vars import Var
 
 async def dl_handler(request):
     file_id = request.match_info.get('id')
     
-    # স্ট্রিমিং প্লেয়ার ইন্টারফেস
-    html_content = f"""
+    html = f"""
     <html>
         <head>
-            <title>Streaming Video</title>
+            <title>Streaming...</title>
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <style>
-                body {{ background: #000; color: #fff; text-align: center; font-family: sans-serif; margin: 0; padding: 20px; }}
-                video {{ width: 100%; max-width: 700px; border-radius: 8px; background: #222; }}
-                .container {{ margin-top: 50px; }}
-                .download-btn {{ display: inline-block; margin-top: 25px; padding: 12px 25px; background: #0088cc; color: white; text-decoration: none; border-radius: 50px; font-weight: bold; transition: 0.3s; }}
-                .download-btn:hover {{ background: #006699; }}
+                body {{ background: #0e0e0e; color: white; font-family: 'Segoe UI', sans-serif; text-align: center; margin: 0; padding: 20px; }}
+                .player-card {{ background: #1a1a1a; padding: 20px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: inline-block; width: 100%; max-width: 600px; }}
+                video {{ width: 100%; border-radius: 10px; border: 1px solid #333; }}
+                .btn {{ display: block; margin-top: 20px; padding: 15px; background: #0088cc; color: white; text-decoration: none; border-radius: 8px; font-weight: bold; }}
             </style>
         </head>
         <body>
-            <div class="container">
-                <h2>আপনার ভিডিওটি প্লে হচ্ছে</h2>
+            <div class="player-card">
+                <h3>🎬 Video Player</h3>
                 <video controls autoplay>
-                    <source src="/dl/{file_id}" type="video/mp4">
-                    Your browser does not support the video tag.
+                    <source src="https://{Var.FQDN}/dl/{file_id}" type="video/mp4">
                 </video>
-                <br>
-                <a href="/dl/{file_id}" class="download-btn">সরাসরি ডাউনলোড করুন (Fast)</a>
+                <a href="https://{Var.FQDN}/dl/{file_id}" class="btn">📥 Fast Download</a>
             </div>
         </body>
     </html>
     """
-    return web.Response(text=html_content, content_type='text/html')
+    return web.Response(text=html, content_type='text/html')
 
 async def web_server():
     app = web.Application()
     app.add_routes([
-        web.get('/', lambda r: web.Response(text="Bot is Live! 🚀")),
-        web.get('/watch/{id}', dl_handler),
-        web.get('/dl/{id}', dl_handler) # ডাউনলোড এবং স্ট্রিম পাথ একই রাখা হয়েছে
+        web.get('/', lambda r: web.Response(text="Bot is Active!")),
+        web.get('/watch/{{id}}', dl_handler),
+        web.get('/dl/{{id}}', dl_handler)
     ])
     return app
