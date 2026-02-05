@@ -1,8 +1,8 @@
 import logging
-import asyncio
 from pyrogram import Client
 from vars import Var
-from utils.keepalive import start_server
+from server import web_server
+from aiohttp import web
 
 logging.basicConfig(level=logging.INFO)
 
@@ -18,10 +18,13 @@ class Bot(Client):
 
     async def start(self):
         await super().start()
-        # ওয়েব সার্ভার শুরু করা যা Render এর পোর্ট এরর ঠিক করবে
-        await start_server()
-        me = await self.get_me()
-        print(f"--- {me.first_name} Started Successfully ---")
+        # ওয়েব সার্ভার চালু করা
+        app = await web_server()
+        runner = web.AppRunner(app)
+        await runner.setup()
+        site = web.TCPSite(runner, Var.BIND_ADDRESS, Var.PORT)
+        await site.start()
+        print("--- Bot & Server Started Successfully ---")
 
 if __name__ == "__main__":
     bot = Bot()
