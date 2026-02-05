@@ -1,11 +1,8 @@
-import mimetypes
 from aiohttp import web
-from vars import Var
 
 async def dl_handler(request):
     file_id = request.match_info.get('id')
     
-    # স্ট্রিমিং এর একটি উন্নত ইন্টারফেস
     html_content = f"""
     <html>
         <head>
@@ -19,11 +16,11 @@ async def dl_handler(request):
         <body>
             <h2>আপনার ভিডিওটি স্ট্রিমিং হচ্ছে</h2>
             <video controls autoplay>
-                <source src="https://{{Var.FQDN}}/dl/{{file_id}}" type="video/mp4">
+                <source src="/dl/{file_id}" type="video/mp4">
                 Your browser does not support the video tag.
             </video>
             <br>
-            <a href="https://{{Var.FQDN}}/dl/{{file_id}}" class="btn">সরাসরি ডাউনলোড করুন</a>
+            <a href="/dl/{file_id}" class="btn">সরাসরি ডাউনলোড করুন</a>
         </body>
     </html>
     """
@@ -33,7 +30,7 @@ async def web_server():
     app = web.Application()
     app.add_routes([
         web.get('/', lambda r: web.Response(text="Bot is running! 🚀")),
-        web.get('/watch/{{id}}', dl_handler),
-        web.get('/dl/{{id}}', dl_handler)
+        web.get('/watch/{id}', dl_handler),
+        web.get('/dl/{id}', dl_handler)
     ])
     return app
