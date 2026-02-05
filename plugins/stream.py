@@ -1,24 +1,8 @@
-from pyrogram import Client, filters
-from vars import Var
+# ফাইলের আসল নাম খোঁজার সঠিক লজিক
+media = message.document or message.video
+file_name = "Video_File.mp4" # ডিফল্ট নাম
 
-@Client.on_message(filters.private & (filters.document | filters.video))
-async def stream_handler(client, message):
-    media = message.document or message.video
-    # ফাইলের আসল নাম খুঁজে বের করা
+if media:
     file_name = getattr(media, 'file_name', "Video_File.mp4")
-    if not file_name:
+    if not file_name: # যদি নাম খালি থাকে
         file_name = "Video_File.mp4"
-
-    # স্টোরেজ চ্যানেলে পাঠানো
-    log_msg = await message.forward(chat_id=Var.BIN_CHANNEL)
-
-    stream_link = f"{Var.URL}watch/{log_msg.id}"
-    download_link = f"{Var.URL}dl/{log_msg.id}"
-
-    await message.reply_text(
-        f"**লিঙ্ক তৈরি হয়ে গেছে!** 🚀\n\n"
-        f"📂 **ফাইলের নাম:** `{file_name}`\n"
-        f"🔗 **স্ট্রিমিং লিঙ্ক:** {stream_link}\n"
-        f"📥 **ডাউনলোড লিঙ্ক:** {download_link}",
-        quote=True
-    )
