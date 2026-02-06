@@ -1,29 +1,35 @@
-import os
+from flask import Flask, Response, request
+from bot.bot_file import app as bot_app
 import mimetypes
-from flask import Flask, request, Response
-from bot.bot_file import app as bot_app # আপনার বট অ্যাপ
 
 server = Flask(__name__)
 
+@server.route('/')
+def home():
+    return "Streaming Server is Live! 🚀"
+
 @server.route('/watch/<file_id>')
 async def stream_video(file_id):
-    # টেলিগ্রাম থেকে ফাইলটি স্ট্রিম করার লজিক
     try:
-        # ফাইল ইনফো সংগ্রহ
-        file_info = await bot_app.get_messages(None, file_id) # অথবা নির্দিষ্ট মেথড
-        
-        def generate():
-            # এটি ভিডিওটিকে ছোট ছোট প্যাকেটে (Chunks) ভাগ করে ইউজারকে পাঠাবে
-            for chunk in bot_app.stream_media(file_id):
+        # ফাইলটি সরাসরি টেলিগ্রাম থেকে স্ট্রিম করার জন্য মেথড
+        async def generate():
+            async for chunk in bot_app.stream_media(file_id):
                 yield chunk
 
-        # ভিডিওর টাইপ চেনা (যেমন mp4)
-        mime_type = mimetypes.guess_type(request.args.get('name', 'video.mp4'))[0]
-        
-        return Response(generate(), mimetype=mime_type)
-    except Exception as e:
-        return str(e), 500
+        # ভিডিওর নাম এবং টাইপ সেট করা
+        file_name = request.args.get('name', 'video.mp4')
+        mime_type, _ = mimetypes.guess_type(file_name)
+        if not mime_type:
+            mime_type = 'video/mp4'
 
-@server.route('/')
-def health():
-    return "Streaming Server is Active!"
+        return Response(
+            generate(),
+            mimetype=mime_type,
+            headers={
+                "Content-Disposition": f"inline; filename={file_name}",
+                "Accept-Ranges": "bytes"
+            }
+        )
+    except Exception as e:
+        print(f"Streaming error: {e}")
+        return "Error: Could not stream the file.", 500
